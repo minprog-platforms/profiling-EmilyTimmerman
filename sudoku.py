@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable, Sequence
+from typing import Iterable
 
 
 class Sudoku:
@@ -17,19 +17,25 @@ class Sudoku:
             self._grid.append(row)
 
     def place(self, value: int, x: int, y: int) -> None:
-        """Place value at x,y."""
+        '''
+        Place value at x,y
+        '''
         old_row = self._grid[y]
         new_row = old_row[:x] + str(value) + old_row[x + 1:]
         self._grid[y] = new_row
 
     def unplace(self, x: int, y: int) -> None:
-        """Remove (unplace) a number at x,y."""
+        '''
+        Remove (unplace) a number at x, y
+        '''
         row = self._grid[y]
         new_row = row[:x] + "0" + row[x + 1:]
         self._grid[y] = new_row
 
     def value_at(self, x: int, y: int) -> int:
-        """Returns the value at x,y."""
+        '''
+        Returns the value at x, y
+        '''
 
         row = self._grid[y]
         value = int(row[x])
@@ -37,7 +43,10 @@ class Sudoku:
         return value
 
     def options_at(self, x: int, y: int) -> Iterable[int]:
-        """Returns all possible values (options) at x,y."""
+        '''
+        Returns all possible values (options) at x, y
+        '''
+
         # transform row and cols list to set
         options = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
@@ -60,10 +69,11 @@ class Sudoku:
         return options
 
     def next_empty_index(self) -> tuple[int, int]:
-        """
-        Returns the next index (x,y) that is empty (value 0).
+        '''
+        Returns the next index (x,y) that is empty (value 0)
         If there is no empty spot, returns (-1,-1)
-        """
+        '''
+
         next_x, next_y = -1, -1
 
         for y in range(9):
@@ -74,14 +84,20 @@ class Sudoku:
         return next_x, next_y
 
     def row_values(self, i: int) -> Iterable[int]:
-        """Returns all values at i-th row."""
+        '''
+        Returns all values at i-th row
+        '''
+
         row = self._grid[i]
         values = map(int, row)
 
         return values
 
     def column_values(self, i: int) -> Iterable[int]:
-        """Returns all values at i-th column."""
+        '''
+        Returns all values at i-th column
+        '''
+
         values = []
 
         for j in range(9):
@@ -90,13 +106,14 @@ class Sudoku:
         return values
 
     def block_values(self, i: int) -> Iterable[int]:
-        """
+        '''
         Returns all values at i-th block.
         The blocks are arranged as follows:
         0 1 2
         3 4 5
         6 7 8
-        """
+        '''
+
         values = []
 
         x_start = (i % 3) * 3
@@ -109,29 +126,26 @@ class Sudoku:
         return values
 
     def is_solved(self) -> bool:
-        """
+        '''
         Returns True if and only if all rows, columns and blocks contain
         only the numbers 1 through 9. False otherwise.
-        """
+        '''
+
         values = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
-        result = True
-
         for i in range(9):
-            set_column = self.column_values(i)
-            set_row = 
-            '''bezig met sets maken en dan vergelijken!''''
-            for value in values:
-                if value not in self.column_values(i):
-                    result = False
+            set_column = set(self.column_values(i))
+            set_row = set(self.row_values(i))
+            set_block = set(self.block_values(i))
 
-                if value not in self.row_values(i):
-                    result = False
+            if values != set_column:
+                return False
+            if values != set_row:
+                return False
+            if values != set_block:
+                return False
 
-                if value not in self.block_values(i):
-                    result = False
-
-        return result
+        return True
 
     def __str__(self) -> str:
         representation = ""
@@ -143,7 +157,10 @@ class Sudoku:
 
 
 def load_from_file(filename: str) -> Sudoku:
-    """Load a Sudoku from filename."""
+    '''
+    Load a Sudoku from filename
+    '''
+
     puzzle: list[str] = []
 
     with open(filename) as f:
