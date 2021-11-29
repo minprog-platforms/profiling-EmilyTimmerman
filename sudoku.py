@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import Iterable, Sequence
-import csv
 
 
 class Sudoku:
@@ -10,27 +9,28 @@ class Sudoku:
         self._grid: list[str] = []
 
         for puzzle_row in puzzle:
-            self._grid.append(puzzle_row)
+            row = ""
+
+            for element in puzzle_row:
+                row += str(element)
+
+            self._grid.append(row)
 
     def place(self, value: int, x: int, y: int) -> None:
         """Place value at x,y."""
-   
         old_row = self._grid[y]
-        list_row = list(old_row)
-        list_row[x] = str(value)
-
-        self._grid[y] = "".join(list_row)
+        new_row = old_row[:x] + str(value) + old_row[x + 1:]
+        self._grid[y] = new_row
 
     def unplace(self, x: int, y: int) -> None:
         """Remove (unplace) a number at x,y."""
-
         row = self._grid[y]
         new_row = row[:x] + "0" + row[x + 1:]
         self._grid[y] = new_row
 
     def value_at(self, x: int, y: int) -> int:
         """Returns the value at x,y."""
-        
+
         row = self._grid[y]
         value = int(row[x])
 
@@ -38,25 +38,24 @@ class Sudoku:
 
     def options_at(self, x: int, y: int) -> Iterable[int]:
         """Returns all possible values (options) at x,y."""
-        options = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        # transform row and cols list to set
+        options = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
-        # Remove all values from the row
-        for value in self.make_set(self.row_values(y)):
-            if value in options:
-                options.remove(value)
+        # obtain a set of all values in column x
+        column_set = set(self.column_values(x))
 
-        # Remove all values from the column
-        for value in self.make_set(self.column_values(x)):
-            if value in options:
-                options.remove(value)
+        # obtain a set of all values in row y
+        row_set = set(self.row_values(y))
 
-        # Get the index of the block based from x,y
+        # obtain a set of all values in block x y
         block_index = (y // 3) * 3 + x // 3
+        block_set = set(self.block_values(block_index))
 
-        # Remove all values from the block
-        for value in self.make_set(self.block_values(block_index)):
-            if value in options:
-                options.remove(value)
+        # make a set of all values that are present
+        chosen_options = column_set.union(row_set.union(block_set))
+
+        # find values that are in left as options
+        options = options.difference(chosen_options)
 
         return options
 
@@ -76,11 +75,8 @@ class Sudoku:
 
     def row_values(self, i: int) -> Iterable[int]:
         """Returns all values at i-th row."""
-        
-        values = []
-
-        for j in range(9):
-            values.append(self.value_at(j, i))
+        row = self._grid[i]
+        values = map(int, row)
 
         return values
 
@@ -117,19 +113,23 @@ class Sudoku:
         Returns True if and only if all rows, columns and blocks contain
         only the numbers 1 through 9. False otherwise.
         """
-        values =(1, 2, 3, 4, 5, 6, 7, 8, 9)
+        values = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
         result = True
 
         for i in range(9):
-            column = self.column_values(i)
-            row = self.row_values(i)
-            block = self.block_values(i)
+            set_column = self.column_values(i)
+            set_row = 
+            '''bezig met sets maken en dan vergelijken!''''
             for value in values:
-                if value in column and value in row and value in block:
-                    return True
-                else:
-                    return False
+                if value not in self.column_values(i):
+                    result = False
+
+                if value not in self.row_values(i):
+                    result = False
+
+                if value not in self.block_values(i):
+                    result = False
 
         return result
 
@@ -141,8 +141,6 @@ class Sudoku:
 
         return representation.strip()
 
-    def make_set(self, list: Iterable[str]) -> Iterable[str]:
-        return set(list)
 
 def load_from_file(filename: str) -> Sudoku:
     """Load a Sudoku from filename."""
@@ -152,6 +150,8 @@ def load_from_file(filename: str) -> Sudoku:
         for line in f:
 
             # strip newline and remove all commas
-            puzzle.append(line.strip().replace(',', ''))
+            line = line.strip().replace(",", "")
+
+            puzzle.append(line)
 
     return Sudoku(puzzle)
